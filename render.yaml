@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: sentinel-deepfake-detector
-    env: docker
-    plan: free
-    repo: https://github.com/nithishkumarbnk/Sentinel
-    branch: main
