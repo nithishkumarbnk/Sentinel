@@ -1,8 +1,12 @@
-opencv-python
+streamlit
 moviepy
 deepface
-requests
-faster-whisper
-librosa
-argostranslate
 mediapipe
+librosa
+scikit-learn
+matplotlib
+Pillow
+numpy
+argostranslate
+faster-whisper
+torch
