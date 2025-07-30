@@ -9,6 +9,12 @@ from scipy.spatial.distance import cosine
 # Suppress verbose TensorFlow logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+
+
+
+
+
+
 def analyze_facial_consistency(video_path, sample_rate=30, max_frames_to_check=30):
     """
     ULTRA-OPTIMIZED version. It makes a single pass over the video to collect all face
