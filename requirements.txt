@@ -1,0 +1,8 @@
+opencv-python
+moviepy
+deepface
+requests
+faster-whisper
+librosa
+argostranslate
+mediapipe
