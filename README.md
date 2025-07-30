@@ -1,4 +1,5 @@
 # 🛡️ Project Sentinel-PRO
+#myself
 
 **Sentinel-PRO is a sophisticated, multi-modal AI-powered threat intelligence platform designed to detect, analyze, and counteract deepfakes and misinformation in real-time.**
 
