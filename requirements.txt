@@ -1,12 +1,10 @@
-streamlit
+streamlit==1.24.0
 moviepy
 deepface
-mediapipe
-librosa
+mediapipe==0.10.9
 scikit-learn
 matplotlib
-Pillow
 numpy
+pillow
+librosa
 argostranslate
-faster-whisper
-torch
