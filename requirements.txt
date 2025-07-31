@@ -1,5 +1,5 @@
 # requirements.txt (Minimal & Clean)
 streamlit
 groq
-moviepy
+moviepy==1.0.3
 numpy
