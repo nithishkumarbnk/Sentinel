@@ -3,3 +3,8 @@ streamlit
 groq
 moviepy==1.0.3
 numpy
+# For transcription
+faster-whisper
+ctranslate2
+torch
+torchaudio
