@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------
-# FINAL and CORRECTED Dockerfile
+# FINAL and CORRECTED Dockerfile - v3
 # -----------------------------------------------------------------------------
 # This version fixes the "streamlit: not found" error by adding the
-# Python scripts directory to the system's PATH, which is the definitive
+# Python scripts directory to the system's PATH. This is the definitive
 # solution for this type of runtime error.
 
 FROM python:3.10-slim
