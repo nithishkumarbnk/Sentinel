@@ -6,11 +6,12 @@
 LOGFILE=/tmp/app.log
 touch $LOGFILE
 
-echo "--- Starting application, logging to $LOGFILE ---"
+echo "--- Starting application with full path, logging to $LOGFILE ---"
 
-# Run the streamlit application in the background and pipe its output to the log file.
-# The '2>&1' part ensures that both standard output and standard error are captured.
-streamlit run main_app.py --server.port=8080 --server.address=0.0.0.0 > $LOGFILE 2>&1 &
+# --- THE DEFINITIVE FIX ---
+# We are now calling streamlit using its full, absolute path.
+# This bypasses any issues with the system's PATH variable.
+/root/.local/bin/streamlit run main_app.py --server.port=8080 --server.address=0.0.0.0 > $LOGFILE 2>&1 &
 
 # Wait a few seconds to give the app time to start or crash
 sleep 15
