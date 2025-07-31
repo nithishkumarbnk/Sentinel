@@ -1,17 +1,4 @@
-# ---
 
----
-
-title: Sentinel-PRO
-emoji: 🛡️
-colorFrom: blue
-colorTo: green
-sdk: docker
-pinned: false
-
----
-
-# ---
 
 # 🛡️ Project Sentinel-PRO
 
