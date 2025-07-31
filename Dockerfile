@@ -1,22 +1,22 @@
 # -----------------------------------------------------------------------------
-# FINAL, CLEANED Dockerfile
+# FINAL Dockerfile with Enhanced Error Logging
 # -----------------------------------------------------------------------------
-# This version completely removes argostranslate to ensure a successful build.
+# This version uses a startup script (run.sh) to capture detailed
+# error messages and diagnose the final runtime crash.
 
 FROM python:3.10-slim
 
-# Set environment variables to prevent Python from writing .pyc files
-# and to ensure output is sent straight to the terminal.
+# Set environment variables for Python
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install essential system dependencies. ffmpeg might still be useful
-# for other libraries, so we can keep it.
+# Install essential system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    procps \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,8 +30,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of your application's source code into the container.
 COPY . .
 
+# Make the startup script executable
+RUN chmod +x run.sh
+
 # Expose the port that Streamlit will run on.
 EXPOSE 8080
 
 # The command to run when the container starts.
-CMD ["streamlit", "run", "main_app.py", "--server.port=8080", "--server.address=0.0.0.0"]
+# This now runs our logging script instead of calling streamlit directly.
+CMD ["./run.sh"]
