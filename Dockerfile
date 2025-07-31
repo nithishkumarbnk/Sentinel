@@ -1,8 +1,9 @@
 # -----------------------------------------------------------------------------
-# FINAL Dockerfile with Enhanced Error Logging
+# FINAL and CORRECTED Dockerfile
 # -----------------------------------------------------------------------------
-# This version uses a startup script (run.sh) to capture detailed
-# error messages and diagnose the final runtime crash.
+# This version fixes the "streamlit: not found" error by adding the
+# Python scripts directory to the system's PATH, which is the definitive
+# solution for this type of runtime error.
 
 FROM python:3.10-slim
 
@@ -10,10 +11,16 @@ FROM python:3.10-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+# --- THE CRUCIAL FIX ---
+# Add the directory where pip installs command-line scripts to the system's PATH.
+# This ensures that commands like "streamlit" can be found at runtime.
+ENV PATH="/root/.local/bin:${PATH}"
+
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install essential system dependencies
+# Install essential system dependencies.
+# procps is needed for the pgrep command in our run.sh script.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     procps \
@@ -37,5 +44,5 @@ RUN chmod +x run.sh
 EXPOSE 8080
 
 # The command to run when the container starts.
-# This now runs our logging script instead of calling streamlit directly.
+# This will now work because the system can find "streamlit".
 CMD ["./run.sh"]
