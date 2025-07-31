@@ -49,10 +49,16 @@ st.write("This demo showcases Sentinel's capabilities in a live attack-and-defen
 
 # --- Initialize Groq Client ---
 try:
-    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    # This is the corrected line. It reads the key from Render's environment variables.
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        st.error("GROQ_API_KEY is not set in the environment. Please add it in your Render service settings.")
+        client = None
+    else:
+        client = Groq(api_key=api_key)
 except Exception as e:
-    st.error("Could not initialize Groq client. Please ensure your `GROQ_API_KEY` is set in your Streamlit secrets.")
-    client = None
+    st.error(f"An error occurred while initializing the Groq client: {e}")
+    client = None```
 
 # --- UI LAYOUT ---
 
