@@ -2,34 +2,38 @@
 import argostranslate.package
 import argostranslate.settings
 import os
+import requests
+import sys
 
 print("--- Starting Argos Translate Setup ---")
 
-# Ensure the directory exists
-argos_home = "/usr/local/share/argos-translate"
-os.makedirs(argos_home, exist_ok=True)
-argostranslate.settings.home_dir = argos_home
+# Define the package URL and the local path to save it
+PACKAGE_URL = "https://s3.amazonaws.com/argos-translate/packages/translate-en_te-1_9.argosmodel"
+PACKAGE_PATH = "translate-en_te.argosmodel"
 
-print("Updating package index...")
-argostranslate.package.update_package_index()
+try:
+    # --- Step 1: Download the package file ---
+    print(f"Downloading package from {PACKAGE_URL}..." )
+    with requests.get(PACKAGE_URL, stream=True) as r:
+        r.raise_for_status()
+        with open(PACKAGE_PATH, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    print("Download complete.")
 
-print("Searching for language packages: en -> te")
-available_packages = argostranslate.package.get_available_packages()
-
-# Find the package for English to Telugu translation
-package_to_install = next(
-    filter(
-        lambda x: x.from_code == "en" and x.to_code == "te",
-        available_packages
-    ),
-    None
-)
-
-if package_to_install:
-    print("Found package. Installing...")
-    package_to_install.install()
+    # --- Step 2: Install the package from the downloaded file ---
+    print(f"Installing package from {PACKAGE_PATH}...")
+    argostranslate.package.install_from_path(PACKAGE_PATH)
     print("✅ Package installed successfully.")
-else:
-    print("⚠️ Warning: Could not find the 'en' to 'te' translation package.")
+
+except Exception as e:
+    print(f"❌ ERROR: Failed to set up Argos Translate package. Error: {e}", file=sys.stderr)
+    sys.exit(1) # Exit with an error code to fail the build if setup fails
+
+finally:
+    # --- Step 3: Clean up the downloaded file ---
+    if os.path.exists(PACKAGE_PATH):
+        os.remove(PACKAGE_PATH)
+        print("Cleaned up downloaded package file.")
 
 print("--- Argos Translate Setup Complete ---")
