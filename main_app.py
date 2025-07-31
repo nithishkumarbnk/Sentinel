@@ -1,4 +1,4 @@
-# main_app.py (Definitive Version with Live Transcription)
+# main_app.py (Final Version with Robust File Handling)
 
 import streamlit as st
 import os
@@ -26,12 +26,10 @@ try:
 except Exception as e:
     st.error(f"An error occurred while initializing the Groq client: {e}")
 
-# Initialize Whisper for transcription. This will download the model on first run.
-# Using a small, fast model perfect for a web service.
+# Initialize Whisper for transcription
 @st.cache_resource
 def load_transcription_model():
     try:
-        # Using "tiny.en" for speed. Other options: "base.en", "small.en"
         model = WhisperModel("tiny.en", device="cpu", compute_type="int8")
         return model
     except Exception as e:
@@ -45,7 +43,6 @@ transcription_model = load_transcription_model()
 # ==============================================================================
 
 def get_ai_response(client, prompt, model="llama3-8b-8192"):
-    """A centralized function to call the Groq API."""
     if not client: return "Error: AI client not initialized."
     try:
         chat_completion = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model=model)
@@ -55,7 +52,6 @@ def get_ai_response(client, prompt, model="llama3-8b-8192"):
         return f"Error: {e}"
 
 def transcribe_audio(model, audio_path):
-    """Transcribes an audio file using the faster-whisper model."""
     if not model: return "Error: Transcription model not loaded."
     try:
         segments, _ = model.transcribe(audio_path, beam_size=5)
@@ -77,7 +73,6 @@ def analyze_gaze_and_blinking_mediapipe(video_path, **kwargs):
     return 85
 
 def analyze_content_risk(client, text):
-    """Analyzes text for risk using the Groq API."""
     if not text or not text.strip(): return 0, "No text provided."
     prompt = f"Analyze the following text for risk (0-100) and justify it. Format: Score: [score], Justification: [justification]. Text: '{text}'"
     response = get_ai_response(client, prompt)
@@ -89,7 +84,6 @@ def analyze_content_risk(client, text):
         return 50, "Could not parse AI response."
 
 def analyze_audio_and_content(client, model, audio_path):
-    """Performs real transcription and then analyzes the content for risk."""
     st.write("... Transcribing audio with Whisper model...")
     transcribed_text = transcribe_audio(model, audio_path)
     st.write(f"**Transcription complete:** *{transcribed_text[:100]}...*")
@@ -114,7 +108,6 @@ def predict_virality(client, text):
         return {"virality_score": 50, "emotion_score": 50, "readability_score": 50}
 
 def run_full_analysis(client, model, video_path):
-    """Main analysis pipeline with real transcription."""
     audio_path = "temp_audio.wav"
     try:
         with VideoFileClip(video_path) as video:
@@ -162,7 +155,15 @@ if 'attack_text' not in st.session_state:
 uploaded_file = st.file_uploader("Upload a video to establish the baseline...", type=["mp4", "mov", "avi"])
 
 if uploaded_file:
-    st.video(uploaded_file)
+    # --- ROBUST FILE HANDLING ---
+    # 1. Save the uploaded file to a temporary, known path.
+    video_path = f"temp_{uploaded_file.name}"
+    with open(video_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    
+    # 2. Display the video from the saved path, not the uploader object.
+    st.video(video_path)
+    
     if st.button("Analyze Baseline"):
         if not transcription_model:
             st.error("Transcription model is not loaded. Cannot proceed.")
@@ -170,17 +171,15 @@ if uploaded_file:
             st.session_state['report_data'] = None
             st.session_state['attack_text'] = None
             
-            video_path = f"temp_{uploaded_file.name}"
-            with open(video_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            
             audio_path_to_delete = None
             try:
                 with st.status("Blue Team is analyzing the asset...", expanded=True) as status:
+                    # 3. Pass the definite video_path to the analysis function.
                     st.session_state['report_data'] = run_full_analysis(client, transcription_model, video_path)
                     audio_path_to_delete = st.session_state['report_data'].get("audio_path")
                     status.update(label="✅ Baseline Analysis Complete.", state="complete")
             finally:
+                # 4. Clean up all temporary files.
                 if os.path.exists(video_path): os.remove(video_path)
                 if audio_path_to_delete and os.path.exists(audio_path_to_delete): os.remove(audio_path_to_delete)
 
