@@ -1,9 +1,5 @@
-opencv-python
-moviepy
-deepface
-requests
-faster-whisper
-librosa
-mediapipe
+# requirements.txt (Minimal & Clean)
+streamlit
 groq
-python-dotenv
+moviepy
+numpy
