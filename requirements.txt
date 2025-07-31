@@ -4,7 +4,6 @@ deepface
 requests
 faster-whisper
 librosa
-argostranslate
 mediapipe
 groq
 python-dotenv
