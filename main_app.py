@@ -1,12 +1,10 @@
-# main_app.py (Final Version without ArgosTranslate)
+# main_app.py (Final, Standalone Version for Render)
 
 import streamlit as st
 import os
-from moviepy.editor import VideoFileClip
-import numpy as np
 from groq import Groq
 
-# --- AI-Powered Modules (Using Groq) ---
+# --- AI-Powered Functions (Self-Contained) ---
 
 def get_ai_response(client, prompt, model="llama3-8b-8192"):
     """A centralized function to call the Groq API."""
@@ -17,6 +15,7 @@ def get_ai_response(client, prompt, model="llama3-8b-8192"):
             messages=[{"role": "user", "content": prompt}],
             model=model,
         )
+        # Correctly access the response content
         return chat_completion.choices[0].message.content
     except Exception as e:
         st.error(f"An error occurred while contacting the AI service: {e}")
@@ -35,52 +34,48 @@ def analyze_content_risk(client, text):
     """
     response = get_ai_response(client, prompt)
     try:
+        # Robustly parse the response
         score_part = response.split("Score:")[1].split(",")[0].strip()
         justification_part = response.split("Justification:")[1].strip()
         return int(score_part), justification_part
     except (IndexError, ValueError):
         return 50, "Could not parse AI response."
 
-# --- STREAMLIT APP ---
+# --- STREAMLIT APP CONFIGURATION ---
 
-st.set_page_config(page_title="Sentinel: Red vs. Blue", layout="wide")
-st.title("🛡️ Sentinel: A Red Team vs. Blue Team Simulation")
-st.write("This demo showcases Sentinel's capabilities in a live attack-and-defense scenario.")
+st.set_page_config(page_title="Sentinel: Content Risk Analyzer", layout="wide")
+st.title("🛡️ Sentinel: Content Risk Analyzer")
+st.info("Enter text to analyze its risk. The Red Team AI will then attempt to weaponize it, and the Blue Team will assess the change in risk.")
 
 # --- Initialize Groq Client ---
+client = None
 try:
-    # This is the corrected line. It reads the key from Render's environment variables.
+    # This reads the key from Render's environment variables.
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
-        st.error("GROQ_API_KEY is not set in the environment. Please add it in your Render service settings.")
-        client = None
+        st.error("GROQ_API_KEY is not set. Please add it in your Render service settings under the 'Environment' tab.")
     else:
         client = Groq(api_key=api_key)
 except Exception as e:
     st.error(f"An error occurred while initializing the Groq client: {e}")
-    client = None
 
 # --- UI LAYOUT ---
 
-st.header("Content Risk Analysis")
-st.info("Enter any text to analyze its potential risk based on sentiment and language.")
-
-# Initialize session state
+# Initialize session state to hold values between reruns
 if 'analysis_done' not in st.session_state:
     st.session_state.analysis_done = False
-if 'original_risk' not in st.session_state:
+    st.session_state.original_text = ""
     st.session_state.original_risk = 0
-if 'attack_risk' not in st.session_state:
-    st.session_state.attack_risk = 0
-if 'attack_text' not in st.session_state:
     st.session_state.attack_text = ""
+    st.session_state.attack_risk = 0
 
 # Input text area
 user_text = st.text_area("Enter the text you want to analyze:", "The new server migration is scheduled for this weekend.", height=150)
 
-if st.button("Analyze Text"):
+if st.button("Analyze and Simulate Attack"):
     if client and user_text:
-        with st.spinner("Blue Team's content analyzer is scanning..."):
+        st.session_state.original_text = user_text
+        with st.spinner("Blue Team is analyzing the original text..."):
             original_risk, _ = analyze_content_risk(client, user_text)
             st.session_state.original_risk = original_risk
             st.session_state.analysis_done = True
@@ -91,14 +86,16 @@ if st.button("Analyze Text"):
             st.session_state.attack_text = attack_text
             
             if attack_text and "Error:" not in attack_text:
-                 attack_risk, _ = analyze_content_risk(client, attack_text)
-                 st.session_state.attack_risk = attack_risk
+                 with st.spinner("Blue Team is analyzing the weaponized text..."):
+                    attack_risk, _ = analyze_content_risk(client, attack_text)
+                    st.session_state.attack_risk = attack_risk
 
     elif not client:
         st.error("AI Client is not initialized. Cannot perform analysis.")
     else:
         st.warning("Please enter some text to analyze.")
 
+# Display results only after the button has been clicked
 if st.session_state.analysis_done:
     st.write("---")
     st.subheader("Analysis Results")
@@ -106,7 +103,7 @@ if st.session_state.analysis_done:
     
     with col1:
         st.metric("Risk Score of Original Text", f"{st.session_state.original_risk}/100")
-        st.info(f"**Original Text:**\n\n{user_text}")
+        st.info(f"**Original Text:**\n\n{st.session_state.original_text}")
 
     with col2:
         st.metric("Risk Score of Malicious Script", f"{st.session_state.attack_risk}/100")
@@ -117,4 +114,3 @@ if st.session_state.analysis_done:
         st.success("✅ **DEFENSE SUCCESSFUL:** A significant spike in content risk was detected!")
     else:
         st.error("⚠️ **DEFENSE FAILED:** The manipulation was too subtle for the content filter to flag as a high-risk change.")
-
