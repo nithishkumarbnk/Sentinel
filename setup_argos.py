@@ -8,7 +8,7 @@ import sys
 print("--- Starting Argos Translate Setup ---")
 
 # Define the package URL and the local path to save it
-PACKAGE_URL = "https://s3.amazonaws.com/argos-translate/packages/translate-en_te-1_9.argosmodel"
+PACKAGE_URL = "https://s3.amazonaws.com/argos-translate/packages/translate-en_te-2_0.argosmodel"
 PACKAGE_PATH = "translate-en_te.argosmodel"
 
 try:
