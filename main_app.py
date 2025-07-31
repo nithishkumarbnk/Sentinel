@@ -58,7 +58,7 @@ try:
         client = Groq(api_key=api_key)
 except Exception as e:
     st.error(f"An error occurred while initializing the Groq client: {e}")
-    client = None```
+    client = None
 
 # --- UI LAYOUT ---
 
